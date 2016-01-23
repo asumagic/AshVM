@@ -62,10 +62,14 @@ namespace ash
 	inline void VM::stackPush(cpuval val)
 	{
 		stack[++stackptr] = val;
+		if (stackptr == stackSize)
+			puts("Stack overflow!");
 	}
 
 	inline cpuval VM::stackPopValue()
 	{
+		if (stackptr == 0)
+			puts("Stack underflow!");
 		return stack[stackptr--];
 	}
 
@@ -124,9 +128,10 @@ namespace ash
 		labelBack:
 		{
 			pc += 1;
+		labelBackNoIncrement:
 			runData = &dataArray[pc];
-			printf("label %p, reg1 : %p, reg2 : %p, reg3: %p, value: %u\n", labelArray[pc], runData->reg1, runData->reg2, runData->reg3, runData->value);
 			goto *labelArray[pc];
+
 		}
 
 		labelNull:
@@ -142,7 +147,14 @@ namespace ash
 
 		labelMov:
 		{
-			*runData->reg1 = runData->reg2 ? *runData->reg2 : runData->value;
+			if (runData->reg2)
+			{
+				*runData->reg1 = *runData->reg2;
+			}
+			else
+			{
+				*runData->reg1 = runData->value;
+			}
 			goto labelBack;
 		}
 
@@ -186,7 +198,7 @@ namespace ash
 		labelJmp:
 		{
 			pc = runData->value;
-			goto labelBack;
+			goto labelBackNoIncrement;
 		}
 
 		labelJz:
@@ -200,7 +212,7 @@ namespace ash
 		{
 			if (stackPopValue() != 0)
 				pc = runData->value;
-			goto labelBack;
+			goto labelBackNoIncrement;
 		}
 
 		labelRjmp:

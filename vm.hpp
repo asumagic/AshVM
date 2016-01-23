@@ -17,6 +17,11 @@ namespace ash
 		null = 0, end, mov, push, load, store, add, sub, mul, jmp, jz, jnz, rjmp, print, dup
 	};
 
+	enum commonRegisters
+	{
+		ax = 1, bx, cx, dx, ex
+	};
+
 	struct instruction
 	{
 		basetype low, high;
