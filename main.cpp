@@ -4,36 +4,6 @@
 
 using namespace ash;
 
-/*
-	mov ax 8 ; le compteur
-	mov bx 1 ; la ou on calcule le resultat
-
-loop:
-	load ax  ; on met la valeur de ax (le compteur) en haut de la pile
-	jz end   ; si le haut de la pile vaux zero, le calcul est finis
-
-	load bx
-	print
-
-	; resultat *= compteur
-	; bx *= ax
-	load ax
-	load bx
-	mul
-	store bx
-
-	; compteur--
-	; bx--
-	load ax
-	push 1
-	sub
-	store ax
-
-	jmp loop
-
-end:
-*/
-
 basetype program[] =
 {
 	instrbase(mov, ax), 8,
