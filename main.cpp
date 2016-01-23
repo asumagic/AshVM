@@ -2,11 +2,11 @@
 
 using namespace ash;
 
-basetype program[]
+const basetype program[]
 {
-	instruction<push>(), 20,
-	instruction<print>(), 20,
-    instruction<end>(), 0
+	instruction(push), 20,
+	instruction(print), 20,
+    instruction(end), 0
 };
 
 int main()

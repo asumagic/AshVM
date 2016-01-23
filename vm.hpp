@@ -8,16 +8,15 @@ namespace ash
 	typedef uint32_t basetype;
 	typedef int32_t  cpuval;
 
-	template<uint8_t opcode, uint8_t reg1 = 0, uint8_t reg2 = 0, uint8_t reg3 = 0>
-	basetype instruction()
-	{
-		return (opcode << 24) | (reg1 << 16) | (reg2 << 8) << reg3;
-	}
-
 	enum instructions
 	{
 		null = 0, end, mov, push, load, store, add, sub, mul, jmp, jz, jnz, rjmp, print, dup
 	};
+
+	constexpr basetype instruction(instructions opcode, uint8_t reg1 = 0, uint8_t reg2 = 0, uint8_t reg3 = 0)
+	{
+		return (opcode << 24) | (reg1 << 16) | (reg2 << 8) << reg3;
+	}
 
 	class VM
 	{
