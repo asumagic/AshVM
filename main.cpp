@@ -7,19 +7,21 @@ using namespace ash;
 basetype program[] =
 {
 	instrbase(push), 20,
-	instrbase(print), 20,
+	instrbase(print), 0,
     instrbase(end), 0
 };
 
 int main()
 {
+	puts("Preparing and starting the VM...");
+
 	ash::VM virtualMachine;
 
-	puts("Binding program.");
 	virtualMachine.bindProgram(&program[0], getProgramSize(program));
-	puts("Preparing the VM.");
 	virtualMachine.prepare();
-	puts("Running the VM.");
 	virtualMachine.run();
+
+	puts("Execution done");
+
     return 0;
 }

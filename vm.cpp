@@ -59,9 +59,27 @@ namespace ash
 		stackSize = size;
 	}
 
+	inline void VM::stackPush(cpuval val)
+	{
+		stack[++stackptr] = val;
+	}
+
+	inline cpuval VM::stackPopValue()
+	{
+		return stack[stackptr--];
+	}
+
+	inline void VM::stackPop()
+	{
+		--stackptr;
+	}
+
 	int32_t* VM::resolveRegister(uint8_t reg)
 	{
-		return &registers[reg];
+		if (reg == 0)
+			return NULL;
+		else
+			return &registers[reg - 1];
 	}
 
 	void VM::run()
@@ -69,9 +87,9 @@ namespace ash
 		std::vector<void*> labelArray;
 		labelArray.resize(programsize);
 
-		for (uint i = 0; i < programsize; i += 2)
+		for (uint i = 0; i < programsize; i += 1)
 		{
-			loinstr low = fetch(i);
+			loinstr low = fetch(i * 2);
 			switch(low.opcode)
 			{
 				case null:  labelArray[i] = &&labelNull; break;
@@ -96,7 +114,7 @@ namespace ash
 				resolveRegister(low.reg1),
 				resolveRegister(low.reg2),
 				resolveRegister(low.reg3),
-				program[(i + 1)] };
+				program[((i * 2) + 1)] };
 
 			dataArray[i] = tmpInstrData;
 		}
@@ -105,8 +123,9 @@ namespace ash
 
 		labelBack:
 		{
-			pc += 2;
+			pc += 1;
 			runData = &dataArray[pc];
+			printf("label %p, reg1 : %p, reg2 : %p, reg3: %p, value: %u\n", labelArray[pc], runData->reg1, runData->reg2, runData->reg3, runData->value);
 			goto *labelArray[pc];
 		}
 
@@ -123,67 +142,87 @@ namespace ash
 
 		labelMov:
 		{
+			*runData->reg1 = runData->reg2 ? *runData->reg2 : runData->value;
 			goto labelBack;
 		}
 
 		labelPush:
 		{
-
+			stackPush(runData->value);
 			goto labelBack;
 		}
 
 		labelLoad:
 		{
+			stackPush(*runData->reg1);
 			goto labelBack;
 		}
 
 		labelStore:
 		{
+			*runData->reg1 = stackPopValue();
 			goto labelBack;
 		}
 
 		labelAdd:
 		{
+			stackPush(stackPopValue() + stackPopValue());
 			goto labelBack;
 		}
 
 		labelSub:
 		{
+			cpuval b = stackPopValue();
+			stackPush(stackPopValue() - b);
 			goto labelBack;
 		}
 
 		labelMul:
 		{
+			stackPush(stackPopValue() * stackPopValue());
 			goto labelBack;
 		}
 
 		labelJmp:
 		{
+			pc = runData->value;
 			goto labelBack;
 		}
 
 		labelJz:
 		{
+			if (stackPopValue() == 0)
+				pc = runData->value;
 			goto labelBack;
 		}
 
 		labelJnz:
 		{
+			if (stackPopValue() != 0)
+				pc = runData->value;
 			goto labelBack;
 		}
 
 		labelRjmp:
 		{
+			pc += runData->value;
 			goto labelBack;
 		}
 
 		labelPrint:
 		{
+			printf("%d\n", stackPopValue());
 			goto labelBack;
 		}
 
 		labelDup:
 		{
+			const cpuval toRepeat = stackPopValue();
+			for (uint32_t i = 0; i < runData->value; i++)
+			{
+				stackPush(toRepeat);
+			}
+
 			goto labelBack;
 		}
 	}

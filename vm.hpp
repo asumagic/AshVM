@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <vector>
 
-#define getProgramSize(program) sizeof(program) / sizeof(unsigned int)
+#define getProgramSize(program) sizeof(program) / (sizeof(uint32_t) * 2)
 
 namespace ash
 {
@@ -75,15 +75,21 @@ namespace ash
 	private:
 		int32_t* resolveRegister(uint8_t reg);
 
+		inline void stackPush(cpuval val);
+		inline cpuval stackPopValue();
+		inline void stackPop();
+
 		std::vector<instrData> dataArray;
 
 		basetype* program;
 		instrData* runData;
 		uint programsize;
-		uint pc = -2;
 
 		cpuval* registers;
 		cpuval* stack;
+
+		uint pc = -1;
+		uint stackptr = 0;
 
 		bool hasInitialized = false, isRunning = false;
 
