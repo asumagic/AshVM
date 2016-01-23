@@ -2,18 +2,40 @@
 #define VM_HPP_INCLUDED
 
 #include <stdint.h>
+#include <vector>
+
+#define getProgramSize(program) sizeof(program) / sizeof(unsigned int)
 
 namespace ash
 {
 	typedef uint32_t basetype;
 	typedef int32_t  cpuval;
+	typedef unsigned int uint;
 
 	enum instructions
 	{
 		null = 0, end, mov, push, load, store, add, sub, mul, jmp, jz, jnz, rjmp, print, dup
 	};
 
-	constexpr basetype instruction(instructions opcode, uint8_t reg1 = 0, uint8_t reg2 = 0, uint8_t reg3 = 0)
+	struct instruction
+	{
+		basetype low, high;
+	};
+
+	struct loinstr
+	{
+		uint8_t opcode, reg1, reg2, reg3;
+	};
+
+	struct instrData
+	{
+		cpuval* reg1;
+		cpuval* reg2;
+		cpuval* reg3;
+		uint32_t value;
+	};
+
+	constexpr basetype instrbase(instructions opcode, uint8_t reg1 = 0, uint8_t reg2 = 0, uint8_t reg3 = 0)
 	{
 		return (opcode << 24) | (reg1 << 16) | (reg2 << 8) << reg3;
 	}
@@ -21,23 +43,52 @@ namespace ash
 	class VM
 	{
 	public:
-		VM() {}
+		VM();
+		~VM();
 
 		enum vmflags
 		{
-			op_prefetch = 0,
-			flags_total
+			op_drop_unused_calls,
+			op_drop_unused_instructions,
+			op_drop_unused_registers
 		};
 
 		void setFlag(vmflags flag, bool value);
+		bool getFlag(vmflags flag) const
+		{
+			return static_cast<bool>((flags & (1 << flag)) >> flag);
+		}
+
+		void bindProgram(basetype* program, uint _programsize);
+
+		void setRegisterCount(uint8_t count);
+		uint8_t getRegisterCount() const { return registerCount; }
+
+		void setStackSize(uint32_t size);
+		uint32_t getStackSize() const { return stackSize; }
+
+		loinstr fetch(const basetype loc);
 
 		void prepare();
+		void run();
 
 	private:
+		int32_t* resolveRegister(uint8_t reg);
+
+		std::vector<instrData> dataArray;
+
 		basetype* program;
+		instrData* runData;
+		uint programsize;
+		uint pc = -2;
 
 		cpuval* registers;
 		cpuval* stack;
+
+		bool hasInitialized = false, isRunning = false;
+
+		uint8_t registerCount = 5;
+		uint32_t stackSize = 512;
 		uint32_t flags;
 	};
 }
