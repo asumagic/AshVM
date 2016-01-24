@@ -43,8 +43,6 @@ int main()
 {
 	puts("Preparing and starting the VM...");
 
-#warning __VERSION__
-
 	ash::VM virtualMachine;
 
 	virtualMachine.bindProgram(&program[0], getProgramSize(program));
