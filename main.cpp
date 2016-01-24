@@ -4,9 +4,9 @@
 
 using namespace ash;
 
-basetype program[] =
+/*basetype program[] =
 {
-	instrbase(mov, ax), 8,
+	instrbase(mov, ax), 10,
 	instrbase(mov, bx), 1,
 
 	instrbase(load, ax), 0,
@@ -27,6 +27,24 @@ basetype program[] =
 
 	instrbase(jmp), 2,
 
+	instrbase(end), 0,
+};*/
+
+/*	0x02000000, -1000000,	// push 0
+	0x02000000, 1,		// push 1
+	0x05000000, 0,		// add
+	0x0C000000, 2,		// dup
+	//0x0B000000, 0,		// print
+	0x0A000000, 1,		// jnz 1
+	0x00000000,	0,		// end*/
+
+basetype program[] =
+{
+	instrbase(push), static_cast<basetype>(-10000000),
+	instrbase(push), 1,
+	instrbase(add), 0,
+	instrbase(dup), 2,
+	instrbase(jnz), 1,
 	instrbase(end), 0,
 };
 

@@ -1,6 +1,7 @@
 #include "vm.hpp"
 
 #include <cstdio>
+#include <chrono>
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCDFAInspection"
@@ -88,6 +89,9 @@ namespace ash
 
 	void VM::run()
 	{
+		using namespace std::chrono;
+		high_resolution_clock::time_point t1 = high_resolution_clock::now();
+
 		std::vector<void*> labelArray;
 		labelArray.resize(programsize);
 
@@ -130,6 +134,7 @@ namespace ash
 			pc += 1;
 		labelBackNoIncrement:
 			runData = &dataArray[pc];
+			//printf("%u\n", pc);
 			goto *labelArray[pc];
 
 		}
@@ -142,19 +147,14 @@ namespace ash
 
 		labelEnd:
 		{
+			auto duration = duration_cast<milliseconds>(high_resolution_clock::now() - t1);
+			printf("Program executed in %I64d ms\n", duration.count());
 			return;
 		}
 
 		labelMov:
 		{
-			if (runData->reg2)
-			{
-				*runData->reg1 = *runData->reg2;
-			}
-			else
-			{
-				*runData->reg1 = runData->value;
-			}
+			*runData->reg1 = runData->reg2 ? *runData->reg2 : runData->value;
 			goto labelBack;
 		}
 
@@ -204,15 +204,21 @@ namespace ash
 		labelJz:
 		{
 			if (stackPopValue() == 0)
+			{
 				pc = runData->value;
+				goto labelBackNoIncrement;
+			}
 			goto labelBack;
 		}
 
 		labelJnz:
 		{
 			if (stackPopValue() != 0)
+			{
 				pc = runData->value;
-			goto labelBackNoIncrement;
+				goto labelBackNoIncrement;
+			}
+			goto labelBack;
 		}
 
 		labelRjmp:

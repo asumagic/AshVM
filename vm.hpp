@@ -54,7 +54,6 @@ namespace ash
 		enum vmflags
 		{
 			op_drop_unused_calls,
-			op_drop_unused_instructions,
 			op_drop_unused_registers
 		};
 
