@@ -89,8 +89,7 @@ namespace ash
 
 	void VM::run()
 	{
-		std::vector<void*> labelArray;
-		labelArray.resize(programsize);
+		void* labels[OPTOTAL] = { &&labelNull, &&labelEnd, &&labelMov, &&labelPush, &&labelPop, &&labelLoad, &&labelStore, &&labelAdd, &&labelIncr, &&labelSub, &&labelDecr, &&labelMul, &&labelJmp, &&labelJz, &&labelJnz, &&labelRjmp, &&labelPrint, &&labelDup, &&labelDupO };
 
 		using namespace std::chrono;
 		auto t1 = high_resolution_clock::now();
@@ -103,37 +102,20 @@ namespace ash
 			const loinstr low = fetch(i * 2);
 			const uint32_t value = program[((i * 2) + 1)];
 
-			switch(low.opcode)
-			{
-				case null:  labelArray[i] = &&labelNull; break;
-				case end:   labelArray[i] = &&labelEnd; break;
-				case mov:   labelArray[i] = &&labelMov; break;
-				case push:  labelArray[i] = &&labelPush; break;
-				case pop:   labelArray[i] = &&labelPop; break;
-				case load:  labelArray[i] = &&labelLoad; break;
-				case store: labelArray[i] = &&labelStore; break;
-				case add:   labelArray[i] = &&labelAdd; break;
-				case incr:  labelArray[i] = &&labelIncr; break;
-				case sub:   labelArray[i] = &&labelSub; break;
-				case decr:  labelArray[i] = &&labelDecr; break;
-				case mul:   labelArray[i] = &&labelMul; break;
-				case jmp:   labelArray[i] = &&labelJmp; break;
-				case jz:    labelArray[i] = &&labelJz; break;
-				case jnz:   labelArray[i] = &&labelJnz; break;
-				case rjmp:  labelArray[i] = &&labelRjmp; break;
-				case print: labelArray[i] = noprint ? &&labelPop : &&labelPrint; break;
-				case dup:   labelArray[i] = (opdup && value == 1) ? &&labelDupO : &&labelDup; break;
-				case dupo:  labelArray[i] = &&labelDupO; break;
-				default:    printf("Unrecognized instruction : %u", low.opcode); break;
-			}
-
-			const instrData tmpInstrData = {
+			instrData idat = {
+				low.opcode,
 				resolveRegister(low.reg1),
 				resolveRegister(low.reg2),
 				resolveRegister(low.reg3),
-				value };
+			value };
 
-			dataArray[i] = tmpInstrData;
+			if (noprint && idat.opcode == print)
+				idat.opcode = pop;
+
+			if (opdup && idat.opcode == dup && idat.value == 1)
+				idat.opcode = dupo;
+
+			dataArray[i] = idat;
 		}
 
 		isRunning = true;
@@ -143,7 +125,7 @@ namespace ash
 			pc++;
 		labelBackNoIncrement:
 			runData = &dataArray[pc];
-			goto *labelArray[pc];
+			goto *labels[runData->opcode];
 
 		}
 

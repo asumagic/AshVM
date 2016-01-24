@@ -14,7 +14,7 @@ namespace ash
 
 	enum instructions
 	{
-		null = 0, end, mov, push, pop, load, store, add, incr, sub, decr, mul, jmp, jz, jnz, rjmp, print, dup, dupo
+		null = 0, end, mov, push, pop, load, store, add, incr, sub, decr, mul, jmp, jz, jnz, rjmp, print, dup, dupo, OPTOTAL
 	};
 
 	enum commonRegisters
@@ -34,6 +34,7 @@ namespace ash
 
 	struct instrData
 	{
+		uint8_t opcode;
 		cpuval *reg1, *reg2, *reg3;
 		uint32_t value;
 	};
