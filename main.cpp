@@ -30,20 +30,11 @@ using namespace ash;
 	instrbase(end), 0,
 };*/
 
-/*	0x02000000, -1000000,	// push 0
-	0x02000000, 1,		// push 1
-	0x05000000, 0,		// add
-	0x0C000000, 2,		// dup
-	//0x0B000000, 0,		// print
-	0x0A000000, 1,		// jnz 1
-	0x00000000,	0,		// end*/
-
 basetype program[] =
 {
 	instrbase(push), static_cast<basetype>(-10000000),
-	instrbase(push), 1,
-	instrbase(add), 0,
-	instrbase(dup), 2,
+	instrbase(incr), 0,
+	instrbase(dup), 1,
 	instrbase(jnz), 1,
 	instrbase(end), 0,
 };
@@ -55,6 +46,9 @@ int main()
 	ash::VM virtualMachine;
 
 	virtualMachine.bindProgram(&program[0], getProgramSize(program));
+	for (VM::vmflags flag : { VM::flag_noprint, VM::op_morph_dup_dupo })
+		virtualMachine.setFlag(flag);
+
 	virtualMachine.prepare();
 	virtualMachine.run();
 

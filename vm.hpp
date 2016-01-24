@@ -14,7 +14,7 @@ namespace ash
 
 	enum instructions
 	{
-		null = 0, end, mov, push, load, store, add, sub, mul, jmp, jz, jnz, rjmp, print, dup
+		null = 0, end, mov, push, pop, load, store, add, incr, sub, decr, mul, jmp, jz, jnz, rjmp, print, dup, dupo
 	};
 
 	enum commonRegisters
@@ -34,9 +34,7 @@ namespace ash
 
 	struct instrData
 	{
-		cpuval* reg1;
-		cpuval* reg2;
-		cpuval* reg3;
+		cpuval *reg1, *reg2, *reg3;
 		uint32_t value;
 	};
 
@@ -54,10 +52,12 @@ namespace ash
 		enum vmflags
 		{
 			op_drop_unused_calls,
-			op_drop_unused_registers
+			op_drop_unused_registers,
+			op_morph_dup_dupo,
+			flag_noprint
 		};
 
-		void setFlag(vmflags flag, bool value);
+		void setFlag(vmflags flag, bool value = true);
 		bool getFlag(vmflags flag) const
 		{
 			return static_cast<bool>((flags & (1 << flag)) >> flag);
@@ -93,7 +93,7 @@ namespace ash
 		cpuval* stack;
 
 		uint pc = -1;
-		uint stackptr = 0;
+		uint stackptr = 1;
 
 		bool hasInitialized = false, isRunning = false;
 

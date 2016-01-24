@@ -89,32 +89,41 @@ namespace ash
 
 	void VM::run()
 	{
-		using namespace std::chrono;
-		high_resolution_clock::time_point t1 = high_resolution_clock::now();
-
 		std::vector<void*> labelArray;
 		labelArray.resize(programsize);
 
+		using namespace std::chrono;
+		auto t1 = high_resolution_clock::now();
+
+		bool noprint = getFlag(flag_noprint);
+		bool opdup = getFlag(op_morph_dup_dupo);
+
 		for (uint i = 0; i < programsize; i += 1)
 		{
-			loinstr low = fetch(i * 2);
+			const loinstr low = fetch(i * 2);
+			const uint32_t value = program[((i * 2) + 1)];
+
 			switch(low.opcode)
 			{
 				case null:  labelArray[i] = &&labelNull; break;
 				case end:   labelArray[i] = &&labelEnd; break;
 				case mov:   labelArray[i] = &&labelMov; break;
 				case push:  labelArray[i] = &&labelPush; break;
+				case pop:   labelArray[i] = &&labelPop; break;
 				case load:  labelArray[i] = &&labelLoad; break;
 				case store: labelArray[i] = &&labelStore; break;
 				case add:   labelArray[i] = &&labelAdd; break;
+				case incr:  labelArray[i] = &&labelIncr; break;
 				case sub:   labelArray[i] = &&labelSub; break;
+				case decr:  labelArray[i] = &&labelDecr; break;
 				case mul:   labelArray[i] = &&labelMul; break;
 				case jmp:   labelArray[i] = &&labelJmp; break;
 				case jz:    labelArray[i] = &&labelJz; break;
 				case jnz:   labelArray[i] = &&labelJnz; break;
 				case rjmp:  labelArray[i] = &&labelRjmp; break;
-				case print: labelArray[i] = &&labelPrint; break;
-				case dup:   labelArray[i] = &&labelDup; break;
+				case print: labelArray[i] = noprint ? &&labelPop : &&labelPrint; break;
+				case dup:   labelArray[i] = (opdup && value == 1) ? &&labelDupO : &&labelDup; break;
+				case dupo:  labelArray[i] = &&labelDupO; break;
 				default:    printf("Unrecognized instruction : %u", low.opcode); break;
 			}
 
@@ -122,7 +131,7 @@ namespace ash
 				resolveRegister(low.reg1),
 				resolveRegister(low.reg2),
 				resolveRegister(low.reg3),
-				program[((i * 2) + 1)] };
+				value };
 
 			dataArray[i] = tmpInstrData;
 		}
@@ -131,10 +140,9 @@ namespace ash
 
 		labelBack:
 		{
-			pc += 1;
+			pc++;
 		labelBackNoIncrement:
 			runData = &dataArray[pc];
-			//printf("%u\n", pc);
 			goto *labelArray[pc];
 
 		}
@@ -147,8 +155,8 @@ namespace ash
 
 		labelEnd:
 		{
-			auto duration = duration_cast<milliseconds>(high_resolution_clock::now() - t1);
-			printf("Program executed in %I64d ms\n", duration.count());
+			duration<float, std::milli> duration = duration_cast<nanoseconds>(high_resolution_clock::now() - t1);
+			printf("Program executed in %f ms\n", duration.count());
 			return;
 		}
 
@@ -161,6 +169,12 @@ namespace ash
 		labelPush:
 		{
 			stackPush(runData->value);
+			goto labelBack;
+		}
+
+		labelPop:
+		{
+			stackPop();
 			goto labelBack;
 		}
 
@@ -182,10 +196,22 @@ namespace ash
 			goto labelBack;
 		}
 
+		labelIncr:
+		{
+			++stack[stackptr];
+			goto labelBack;
+		}
+
 		labelSub:
 		{
 			cpuval b = stackPopValue();
 			stackPush(stackPopValue() - b);
+			goto labelBack;
+		}
+
+		labelDecr:
+		{
+			--stack[stackptr];
 			goto labelBack;
 		}
 
@@ -235,12 +261,19 @@ namespace ash
 
 		labelDup:
 		{
-			const cpuval toRepeat = stackPopValue();
-			for (uint32_t i = 0; i < runData->value; i++)
+			const cpuval toRepeat = stack[stackptr];
+			const uint target = stackptr + runData->value;
+			while (stackptr < target)
 			{
-				stackPush(toRepeat);
+				stack[++stackptr] = toRepeat;
 			}
+			goto labelBack;
+		}
 
+		labelDupO:
+		{
+			const cpuval val = stack[stackptr];
+			stack[++stackptr] = val;
 			goto labelBack;
 		}
 	}
