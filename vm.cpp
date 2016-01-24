@@ -1,11 +1,6 @@
 #include "vm.hpp"
 
 #include <cstdio>
-#include <chrono>
-
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCDFAInspection"
-// CLion does not like the goto void* sorcellery.
 
 namespace ash
 {
@@ -91,9 +86,6 @@ namespace ash
 	{
 		void* labels[OPTOTAL] = { &&labelNull, &&labelEnd, &&labelMov, &&labelPush, &&labelPop, &&labelLoad, &&labelStore, &&labelAdd, &&labelIncr, &&labelSub, &&labelDecr, &&labelMul, &&labelJmp, &&labelJz, &&labelJnz, &&labelRjmp, &&labelPrint, &&labelDup, &&labelDupO };
 
-		using namespace std::chrono;
-		auto t1 = high_resolution_clock::now();
-
 		bool noprint = getFlag(flag_noprint);
 		bool opdup = getFlag(op_morph_dup_dupo);
 
@@ -137,8 +129,6 @@ namespace ash
 
 		labelEnd:
 		{
-			duration<float, std::milli> duration = duration_cast<nanoseconds>(high_resolution_clock::now() - t1);
-			printf("Program executed in %f ms\n", duration.count());
 			return;
 		}
 
@@ -260,5 +250,3 @@ namespace ash
 		}
 	}
 }
-
-#pragma clang diagnostic pop

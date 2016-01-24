@@ -32,7 +32,7 @@ using namespace ash;
 
 basetype program[] =
 {
-	instrbase(push), static_cast<basetype>(-10000000),
+	instrbase(push), static_cast<basetype>(-100000000),
 	instrbase(incr), 0,
 	instrbase(dupo), 0,
 	instrbase(jnz), 1,
