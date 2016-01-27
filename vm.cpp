@@ -64,7 +64,7 @@ namespace ash
 
 	void VM::run()
 	{
-		void* labels[OPTOTAL] = { &&labelNull, &&labelEnd, &&labelPush, &&labelPop, &&labelAdd, &&labelIncr, &&labelSub, &&labelDecr, &&labelMul, &&labelJmp, &&labelJz, &&labelJnz, &&labelRjmp, &&labelPrint, &&labelDup, &&labelDupO };
+		void* labels[OPTOTAL] = { &&lNull, &&lEnd, &&lPush, &&lPop, &&lAdd, &&lIncr, &&lSub, &&lDecr, &&lMul, &&lJmp, &&lJz, &&lJnz, &&lRjmp, &&lPrint, &&lDup, &&lDupO };
 
 		const bool noPrint = getFlag(flag_noprint);
 		const bool measureTime = getFlag(dbg_measure_runtime);
@@ -95,20 +95,20 @@ namespace ash
 
 		isRunning = true;
 
-		labelBack:
+		lBack:
 			pc++;
-		labelBackNoIncrement:
+		lBackNoIncrement:
 			const instruction& instr = instructionArray[pc];
 			value = instr.value;
 			goto *labels[instr.opcode];
 
-		labelNull:
+		lNull:
 		{
 			puts("Encountered null instruction.");
-			goto labelBack;
+			goto lBack;
 		}
 
-		labelEnd:
+		lEnd:
 #ifdef ALLOW_TIME_MEASURE
 			if (measureTime)
 			{
@@ -118,66 +118,66 @@ namespace ash
 #endif
 			return;
 
-		labelPush:
+		lPush:
 			stackPush(value);
-			goto labelBack;
+			goto lBack;
 
-		labelPop:
+		lPop:
 			stackPop();
-			goto labelBack;
+			goto lBack;
 
-		labelAdd:
+		lAdd:
 			stackPush(stackPopValue() + stackPopValue());
-			goto labelBack;
+			goto lBack;
 
-		labelIncr:
+		lIncr:
 			++stack[stackptr];
-			goto labelBack;
+			goto lBack;
 
-		labelSub:
+		lSub:
 		{
 			cpuval b = stackPopValue();
 			stackPush(stackPopValue() - b);
-			goto labelBack;
+			goto lBack;
 		}
 
-		labelDecr:
+		lDecr:
 			--stack[stackptr];
-			goto labelBack;
+			goto lBack;
 
-		labelMul:
+		lMul:
 			stackPush(stackPopValue() * stackPopValue());
-			goto labelBack;
+			goto lBack;
 
-		labelJmp:
+		lJmp:
 			pc = value;
-			goto labelBackNoIncrement;
+			goto lBackNoIncrement;
 
-		labelJz:
+		lJz:
 			if (stackPopValue() == 0)
 			{
 				pc = value;
-				goto labelBackNoIncrement;
+				goto lBackNoIncrement;
 			}
-			goto labelBack;
+			goto lBack;
 
-		labelJnz:
+		lJnz:
 			if (stackPopValue() != 0)
 			{
 				pc = value;
-				goto labelBackNoIncrement;
+				goto lBackNoIncrement;
 			}
-			goto labelBack;
+			goto lBack;
 
-		labelRjmp:
+		lRjmp:
 			pc += value;
-			goto labelBack;
+			goto lBack;
 
-		labelPrint:
+		lPrint:
 			printf("%d\n", stackPopValue());
-			goto labelBack;
+			goto lBack;
 
-		labelDup:
+		lDup:
 		{
 			const cpuval toRepeat = stack[stackptr];
 			const uint target = stackptr + value;
@@ -185,14 +185,14 @@ namespace ash
 			{
 				stack[++stackptr] = toRepeat;
 			}
-			goto labelBack;
+			goto lBack;
 		}
 
-		labelDupO:
+		lDupO:
 		{
 			const cpuval val = stack[stackptr];
 			stack[++stackptr] = val;
-			goto labelBack;
+			goto lBack;
 		}
 	}
 }
