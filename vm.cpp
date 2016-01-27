@@ -73,6 +73,11 @@ namespace ash
 #ifdef ALLOW_TIME_MEASURE // TODO : Find a more elegant way so we don't add overhead when not using -dbg_measure_runtime
 		using namespace std::chrono;
 		auto measureStart = high_resolution_clock::now();
+#else
+		if (measureTime)
+		{
+			puts("Error : The VM was not compiled with ALLOW_TIME_MEASURE. Time measurement is not possible.");
+		}
 #endif
 
 		for (uint i = 0; i < programsize; ++i)
