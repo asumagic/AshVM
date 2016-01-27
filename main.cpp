@@ -32,24 +32,28 @@ using namespace ash;
 
 basetype program[] =
 {
-	instrbase(push), static_cast<basetype>(-100000000),
-	instrbase(incr), 0,
-	instrbase(dupo), 0,
-	instrbase(jnz), 1,
-	instrbase(end), 0,
+	push, static_cast<basetype>(-10000000),
+	incr, 0,
+	dupo, 0,
+	jnz, 1,
+	end, 0,
 };
 
 int main()
 {
-	puts("Preparing and starting the VM...");
-
+	puts("Getting the VM ready...");
 	ash::VM virtualMachine;
 
+	puts("Binding program and setting flags...");
+
 	virtualMachine.bindProgram(&program[0], getProgramSize(program));
-	for (VM::vmflags flag : { VM::flag_noprint, VM::op_morph_dup_dupo })
+	for (VM::vmflags flag : { VM::dbg_measure_runtime })
 		virtualMachine.setFlag(flag);
 
+	puts("Preparing the VM...");
 	virtualMachine.prepare();
+
+	puts("Running the VM...");
 	virtualMachine.run();
 
 	puts("Execution done");

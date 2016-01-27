@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <memory>
 
 #define getProgramSize(program) sizeof(program) / (sizeof(uint32_t) * 2)
 
@@ -14,35 +15,19 @@ namespace ash
 
 	enum instructions
 	{
-		null = 0, end, mov, push, pop, load, store, add, incr, sub, decr, mul, jmp, jz, jnz, rjmp, print, dup, dupo, OPTOTAL
+		null = 0, end, push, pop, add, incr, sub, decr, mul, jmp, jz, jnz, rjmp, print, dup, dupo, OPTOTAL
 	};
 
-	enum commonRegisters
+	static const char* instructionStrings[] =
 	{
-		ax = 1, bx, cx, dx, ex
+		"null", "end", "push", "pop", "add", "incr", "sub", "decr", "mul", "jmp", "jz", "jnz", "rjmp", "print", "dup", "dupo"
 	};
 
 	struct instruction
 	{
-		basetype low, high;
+		uint32_t opcode;
+		basetype value;
 	};
-
-	struct loinstr
-	{
-		uint8_t opcode, reg1, reg2, reg3;
-	};
-
-	struct instrData
-	{
-		uint8_t opcode;
-		cpuval *reg1, *reg2, *reg3;
-		uint32_t value;
-	};
-
-	constexpr basetype instrbase(instructions opcode, uint8_t reg1 = 0, uint8_t reg2 = 0, uint8_t reg3 = 0)
-	{
-		return (opcode << 24) | (reg1 << 16) | (reg2 << 8) << reg3;
-	}
 
 	class VM
 	{
@@ -52,10 +37,9 @@ namespace ash
 
 		enum vmflags
 		{
-			op_drop_unused_calls,
-			op_drop_unused_registers,
-			op_morph_dup_dupo,
-			flag_noprint
+			flag_noprint,
+			dbg_list_preprocessed,
+			dbg_measure_runtime
 		};
 
 		void setFlag(vmflags flag, bool value = true);
@@ -66,41 +50,34 @@ namespace ash
 
 		void bindProgram(basetype* program, uint _programsize);
 
-		void setRegisterCount(uint8_t count);
-		uint8_t getRegisterCount() const { return registerCount; }
-
 		void setStackSize(uint32_t size);
 		uint32_t getStackSize() const { return stackSize; }
 
-		loinstr fetch(const basetype loc);
+		instruction fetch(const basetype loc);
 
 		void prepare();
 		void run();
 
 	private:
-		int32_t* resolveRegister(uint8_t reg);
-
 		inline void stackPush(cpuval val);
 		inline cpuval stackPopValue();
 		inline void stackPop();
 
-		std::vector<instrData> dataArray;
+		std::vector<instruction> instructionArray;
 
 		basetype* program;
-		instrData* runData;
+		uint32_t value;
 		uint programsize;
 
-		cpuval* registers;
-		cpuval* stack;
+		std::unique_ptr<cpuval[]> stack;
 
 		uint pc = -1;
 		uint stackptr = 1;
 
 		bool hasInitialized = false, isRunning = false;
 
-		uint8_t registerCount = 5;
 		uint32_t stackSize = 512;
-		uint32_t flags;
+		uint32_t flags = 0;
 	};
 }
 
