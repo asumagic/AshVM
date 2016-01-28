@@ -43,5 +43,4 @@ It will be possible in the future to :
 * Call external C functions within the bytecode also using cdecl...
 * ... And being able to add some via the ash::VM class
 * Interprete bytecode on the fly
-* Load bytecode from files
 * Reload modified bytecode from a file while the program is running
