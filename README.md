@@ -1,5 +1,5 @@
 # AshVM
-AshVM is a simple and portable Virtual Machine written in C++ that interpretes Ash bytecode.
+AshVM is a simple to use and portable 32-bit Virtual Machine written in C++ that interpretes Ash bytecode.
 It will be able to load bytecode directly from files (and a simple ashasm parser will come after then).
 
 It requires a C++11 compiler. Because of the label reference based interpretation (for a noticeable speed gain, around 50%, compared to the first version), it may only run on g++ (x86, ARM, PPC should work, but according to the gcc webpage, AVR wouldn't), LLVM clang++ and possibly icc.
