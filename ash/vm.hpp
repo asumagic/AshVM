@@ -5,8 +5,6 @@
 #include <vector>
 #include <memory>
 
-#define getProgramSize(program) sizeof(program) / (sizeof(uint32_t) * 2)
-
 namespace ash
 {
 	typedef uint32_t basetype;
@@ -29,18 +27,28 @@ namespace ash
 		basetype value;
 	};
 
+	template<typename T, size_t size>
+	constexpr size_t getArraySize(T(&)[size])
+	{
+		return size;
+	}
+
 	class VM
 	{
 	public:
 		VM();
+		VM(basetype* program, uint _programsize);
 		~VM();
 
 		enum vmflags
 		{
-			flag_noprint,
-			dbg_list_preprocessed,
-			dbg_measure_runtime
+			pp_noprint,
+			pp_dbg_list,
+			dbg_measure_runtime,
+			flags_total
 		};
+
+		static const char* vmflagsStrings[];
 
 		void setFlag(vmflags flag, bool value = true);
 		bool getFlag(vmflags flag) const
@@ -71,7 +79,7 @@ namespace ash
 
 		std::unique_ptr<cpuval[]> stack;
 
-		uint pc = -1;
+		uint pc = static_cast<uint>(-1); // Relies on overflowing. To change?
 		uint stackptr = 1;
 
 		bool hasInitialized = false, isRunning = false;

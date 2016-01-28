@@ -11,8 +11,19 @@
 namespace ash
 {
 	VM::VM() {}
+	VM::VM(basetype* _program, uint _programsize)
+	{
+		bindProgram(_program, _programsize);
+	}
 
 	VM::~VM() {}
+
+	const char* VM::vmflagsStrings[] =
+	{
+		"pp_noprint",
+		"pp_dbg_list",
+		"dbg_measure_runtime"
+	};
 
 	void VM::setFlag(vmflags flag, bool value)
 	{
@@ -66,9 +77,9 @@ namespace ash
 	{
 		void* labels[OPTOTAL] = { &&lNull, &&lEnd, &&lPush, &&lPop, &&lAdd, &&lIncr, &&lSub, &&lDecr, &&lMul, &&lJmp, &&lJz, &&lJnz, &&lRjmp, &&lPrint, &&lDup, &&lDupO };
 
-		const bool noPrint = getFlag(flag_noprint);
+		const bool noPrint = getFlag(pp_noprint);
 		const bool measureTime = getFlag(dbg_measure_runtime);
-		const bool printInstructions = getFlag(dbg_list_preprocessed);
+		const bool printInstructions = getFlag(pp_dbg_list);
 
 #ifdef ALLOW_TIME_MEASURE // TODO : Find a more elegant way so we don't add overhead when not using -dbg_measure_runtime
 		using namespace std::chrono;
@@ -88,7 +99,7 @@ namespace ash
 				instr.opcode = pop;
 
 			if (printInstructions)
-				printf("%s %d\n", instructionStrings[instr.opcode], instr.value);
+				printf("%s (%d) %d\n", instructionStrings[instr.opcode], instr.opcode, instr.value);
 
 			instructionArray[i] = instr;
 		}
@@ -104,7 +115,7 @@ namespace ash
 
 		lNull:
 		{
-			puts("Encountered null instruction.");
+			puts("Null instruction encountered.");
 			goto lBack;
 		}
 

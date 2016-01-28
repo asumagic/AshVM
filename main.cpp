@@ -1,62 +1,56 @@
-#include "vm.hpp"
+#include "ash/vm.hpp"
+#include "ash/fileimport.h"
 
 #include <cstdio>
+#include <stdlib.h>
+#include <string.h>
 
 using namespace ash;
 
-/*basetype program[] =
+int main(int argc, char* argv[])
 {
-	instrbase(mov, ax), 10,
-	instrbase(mov, bx), 1,
+	if (argc <= 1)
+	{
+		perror("Usage : AshVM [file] (arguments)");
+		return EXIT_FAILURE;
+	}
 
-	instrbase(load, ax), 0,
-	instrbase(jz), 15,
+	programData program = ash::loadProgramFromFile(argv[1]);
+	if (program.program == nullptr)
+		return EXIT_FAILURE;
 
-	instrbase(load, bx), 0,
-	instrbase(print), 0,
+	ash::VM virtualMachine(program.program, program.size);
 
-	instrbase(load, ax), 0,
-	instrbase(load, bx), 0,
-	instrbase(mul), 0,
-	instrbase(store, bx), 0,
+	for (uint32_t i = 2; i < argc; ++i)
+	{
+		if (argv[i][0] != '-')
+		{
+			puts("Parameters must be prefixed by a '-' character.");
+		}
 
-	instrbase(load, ax), 0,
-	instrbase(push), 1,
-	instrbase(sub), 0,
-	instrbase(store, ax), 0,
+		char* arg = argv[i] + 1;
 
-	instrbase(jmp), 2,
+		bool foundMatch = false;
+		for (uint32_t j = 0; j < VM::flags_total; ++j)
+		{
+			if (strcmp(VM::vmflagsStrings[j], arg) == 0)
+			{
+				virtualMachine.setFlag(static_cast<VM::vmflags>(j));
+				foundMatch = true;
+				break;
+			}
+		}
 
-	instrbase(end), 0,
-};*/
+		if (!foundMatch)
+		{
+			printf("Unrecognized commandline argument %s!\n", arg);
+		}
+	}
 
-basetype program[] =
-{
-	push, static_cast<basetype>(-10000000),
-	incr, 0,
-	dupo, 0,
-	jnz, 1,
-	end, 0,
-};
-
-int main()
-{
-	puts("Getting the VM ready...");
-	ash::VM virtualMachine;
-
-	puts("Binding program and setting flags...");
-
-	virtualMachine.bindProgram(&program[0], getProgramSize(program));
-	for (VM::vmflags flag : { VM::dbg_measure_runtime })
-		virtualMachine.setFlag(flag);
-
-	puts("Preparing the VM...");
 	virtualMachine.prepare();
-
-	puts("Running the VM...");
 	virtualMachine.run();
 
-	puts("Execution done");
+	delete[] program.program;
 
     return 0;
 }
