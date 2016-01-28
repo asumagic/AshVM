@@ -2,7 +2,7 @@
 AshVM is a simple and portable Virtual Machine written in C++ that interpretes Ash bytecode.
 It will be able to load bytecode directly from files (and a simple ashasm parser will come after then).
 
-It requires a C++11 compiler. Because of the label reference based interpretation (for a noticeable speed gain compared to the first version), it may only run on g++ (x86, ARM, PPC should work, but according to the gcc webpage, AVR wouldn't), LLVM clang++ and possibly icc.
+It requires a C++11 compiler. Because of the label reference based interpretation (for a noticeable speed gain, around 50%, compared to the first version), it may only run on g++ (x86, ARM, PPC should work, but according to the gcc webpage, AVR wouldn't), LLVM clang++ and possibly icc.
 
 When no time measuring is specified compile-time, the only dependencies are stdint, memory (for C++11 smart pointers) and vectors (these probably will be dropped soon); Else chrono also is required.
 
