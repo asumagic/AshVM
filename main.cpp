@@ -5,12 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-using namespace ash;
-
 int main(int argc, char* argv[])
 {
+	using namespace ash;
+
 	if (argc <= 1)
 	{
+		printf(cinNotice);
 		perror("Usage : AshVM [file] (arguments)");
 		return EXIT_FAILURE;
 	}
@@ -19,32 +20,44 @@ int main(int argc, char* argv[])
 	if (program.program == nullptr)
 		return EXIT_FAILURE;
 
-	ash::VM virtualMachine(program.program, program.size);
+	unsigned int errcount = 0;
+
+	VM virtualMachine(program.program, program.size);
 
 	for (uint32_t i = 2; i < argc; ++i)
 	{
 		if (argv[i][0] != '-')
 		{
-			puts("Parameters must be prefixed by a '-' character.");
+			printf("%sParameters must be prefixed by a '-' character.\n", cinError);
+			++errcount;
 		}
-
-		char* arg = argv[i] + 1;
-
-		bool foundMatch = false;
-		for (uint32_t j = 0; j < VM::flags_total; ++j)
+		else
 		{
-			if (strcmp(VM::vmflagsStrings[j], arg) == 0)
+			char* arg = argv[i] + 1;
+
+			bool foundMatch = false;
+			for (uint32_t j = 0; j < VM::flags_total; ++j)
 			{
-				virtualMachine.setFlag(static_cast<VM::vmflags>(j));
-				foundMatch = true;
-				break;
+				if (strcmp(VM::vmflagsStrings[j], arg) == 0)
+				{
+					virtualMachine.setFlag(static_cast<VM::vmflags>(j));
+					foundMatch = true;
+					break;
+				}
+			}
+
+			if (!foundMatch)
+			{
+				printf("%sUnrecognized commandline argument %s!\n", cinError, arg);
+				++errcount;
 			}
 		}
+	}
 
-		if (!foundMatch)
-		{
-			printf("Unrecognized commandline argument %s!\n", arg);
-		}
+	if (errcount != 0)
+	{
+		printf("%sVM execution aborted with %u errors.", fatalError, errcount);
+		return EXIT_FAILURE;
 	}
 
 	virtualMachine.prepare();

@@ -27,6 +27,8 @@ namespace ash
 		basetype value;
 	};
 
+	const char fatalError[] = "[ XX ] ";
+
 	template<typename T, size_t size>
 	constexpr size_t getArraySize(T(&)[size])
 	{
