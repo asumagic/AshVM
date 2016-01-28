@@ -8,6 +8,18 @@ When no time measuring is specified compile-time (see [ALLOW_TIME_MEASURE](https
 
 As for now, the code is moving from a register-based implementation to a variable-based implementation which allows having a way larger set of instructions and an higher-level development (that also will make compiling from the incoming Ash programming language easier). It is usable, but don't except to create more complex programs easily (not because functions are not implemented yet, but also because the only way of storing stuff is the stack (which is very limiting, even having the DUPlicate instruction)).
 
+Using the Virtual Machine :
+```c++
+int main()
+{
+	ash::VM virtualMachine; // Create a virtual machine
+	virtualMachine.bindProgram(&program[0], getProgramSize(program)); // Binds an array called "program", see next piece of code and gets its size (getProgramSize is a macro to get program's size)
+	virtualMachine.prepare(); // Prepare the virtual machine for running
+	virtualMachine.run(); // Runs the virtual machine
+	return 0;
+}
+```
+
 Simple program counting from -10'000'000 to 0 (decrementing from 10'000'000 to 0 probably would be possible as well) :
 ```c++
 basetype program[] =
