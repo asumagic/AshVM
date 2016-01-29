@@ -22,7 +22,8 @@ namespace ash
 	{
 		"pp_noprint",
 		"pp_dbg_list",
-		"dbg_measure_runtime"
+		"dbg_measure_runtime",
+		"pp_list_vm_instructions"
 	};
 
 	void VM::setFlag(vmflags flag, bool value)
@@ -41,12 +42,22 @@ namespace ash
 		instructionArray.resize(programsize);
 		stack = std::unique_ptr<cpuval[]>(new cpuval[stackSize]);
 
+		if (getFlag(pp_list_vm_instructions))
+        {
+            printf("Available instructions (%u) :\n", OPTOTAL);
+            for (uint i = 0; i < OPTOTAL; i++)
+            {
+                printf("- %s (%u)\n", instructionStrings[i], i);
+            }
+        }
+
 		hasInitialized = true;
 	}
 
 	inline instruction VM::fetch(const basetype loc)
 	{
-		return instruction{ program[loc], program[loc + 1] };
+		return instruction{ program[loc],
+                            program[loc + 1] };
 	}
 
 	void VM::setStackSize(uint32_t size)
@@ -75,7 +86,7 @@ namespace ash
 
 	void VM::run()
 	{
-		void* labels[OPTOTAL] = { &&lNull, &&lEnd, &&lPush, &&lPop, &&lAdd, &&lIncr, &&lSub, &&lDecr, &&lMul, &&lJmp, &&lJz, &&lJnz, &&lRjmp, &&lPrint, &&lDup, &&lDupO };
+		void* labels[OPTOTAL] = { &&lNull, &&lEnd, &&lPush, &&lPop, &&lAdd, &&lIncr, &&lSub, &&lDecr, &&lMul, &&lJmp, &&lJz, &&lJnz, &&lJlz, &&lJhz, &&lRjmp, &&lPrint, &&lDup, &&lDupO, &&lStore, &&lLoad, &&lCreate };
 
 		const bool noPrint = getFlag(pp_noprint);
 		const bool measureTime = getFlag(dbg_measure_runtime);
@@ -99,7 +110,7 @@ namespace ash
 				instr.opcode = pop;
 
 			if (printInstructions)
-				printf("%s (%d) %d\n", instructionStrings[instr.opcode], instr.opcode, instr.value);
+				printf("[%u] %s (%d) %d\n", i, instructionStrings[instr.opcode], instr.opcode, instr.value);
 
 			instructionArray[i] = instr;
 		}
@@ -111,6 +122,7 @@ namespace ash
 		lBackNoIncrement:
 			const instruction& instr = instructionArray[pc];
 			value = instr.value;
+
 			goto *labels[instr.opcode];
 
 		lNull:
@@ -180,6 +192,22 @@ namespace ash
 			}
 			goto lBack;
 
+		lJlz:
+		    if (stackPopValue() < 0)
+			{
+				pc = value;
+				goto lBackNoIncrement;
+			}
+		    goto lBack;
+
+		lJhz:
+            if (stackPopValue() < 0)
+			{
+				pc = value;
+				goto lBackNoIncrement;
+			}
+		    goto lBack;
+
 		lRjmp:
 			pc += value;
 			goto lBack;
@@ -205,5 +233,21 @@ namespace ash
 			stack[++stackptr] = val;
 			goto lBack;
 		}
+
+		lLoad:
+		    if (instr.value != 0)
+                stackPush(variables[instr.value]);
+
+            stackPush(stackPopValue());
+		    goto lBack;
+
+		lStore:
+            variables[instr.value] = stackPopValue();
+		    goto lBack;
+
+		lCreate:
+		    if (variables.size() <= instr.value)
+                variables.resize(instr.value + 1);
+            goto lBack;
 	}
 }

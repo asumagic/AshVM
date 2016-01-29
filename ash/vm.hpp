@@ -13,12 +13,12 @@ namespace ash
 
 	enum instructions
 	{
-		null = 0, end, push, pop, add, incr, sub, decr, mul, jmp, jz, jnz, rjmp, print, dup, dupo, OPTOTAL
+		null = 0, end, push, pop, add, incr, sub, decr, mul, jmp, jz, jnz, jlz, jhz, rjmp, print, dup, dupo, store, load, create, OPTOTAL
 	};
 
 	static const char* instructionStrings[] =
 	{
-		"null", "end", "push", "pop", "add", "incr", "sub", "decr", "mul", "jmp", "jz", "jnz", "rjmp", "print", "dup", "dupo"
+		"null", "end", "push", "pop", "add", "incr", "sub", "decr", "mul", "jmp", "jz", "jnz", "jlz", "jhz", "rjmp", "print", "dup", "dupo", "store", "load", "create",
 	};
 
 	struct instruction
@@ -26,8 +26,6 @@ namespace ash
 		uint32_t opcode;
 		basetype value;
 	};
-
-	const char fatalError[] = "[ XX ] ";
 
 	template<typename T, size_t size>
 	constexpr size_t getArraySize(T(&)[size])
@@ -47,6 +45,7 @@ namespace ash
 			pp_noprint,
 			pp_dbg_list,
 			dbg_measure_runtime,
+			pp_list_vm_instructions,
 			flags_total
 		};
 
@@ -80,6 +79,7 @@ namespace ash
 		uint programsize;
 
 		std::unique_ptr<cpuval[]> stack;
+		std::vector<int32_t> variables;
 
 		uint pc = static_cast<uint>(-1); // Relies on overflowing. To change?
 		uint stackptr = 1;

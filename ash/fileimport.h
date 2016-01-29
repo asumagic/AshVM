@@ -14,8 +14,9 @@ namespace ash
 
 	programData loadProgramFromFile(const char* filename);
 
-	const char cinError[] = "[X] >> ";
-	const char cinNotice[] = "[i] >> ";
+	const char warning[] = "(!) ";
+	const char error[] = "(X) ";
+	const char fatalError[] = "[X] ";
 }
 
 #endif
