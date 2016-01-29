@@ -6,7 +6,7 @@ It requires a C++11 compiler. Because of the label reference based interpretatio
 
 clang++ seems to optimize the VM slightly better than g++ (on a i5-4670K, measured to 5~10% on the countdown program)
 
-When no time measuring is specified compile-time (see [ALLOW_TIME_MEASURE](https://github.com/AsuMagic/AshVM/blob/master/vm.cpp#L3)), the only dependencies are <stdint.h>, <memory> (for C++11 smart pointers) and <vector> (these probably will be dropped soon); Else <chrono> also is required.
+When no time measuring is specified compile-time (see [ALLOW_TIME_MEASURE](https://github.com/AsuMagic/AshVM/blob/master/vm.cpp#L3)), the only dependencies are stdint, memory (for C++11 smart pointers) and vector (these probably will be dropped soon); Else chrono also is required.
 
 As for now, the code is moving from a register-based implementation to a variable-based implementation which allows having a way larger set of instructions and an higher-level development (that also will make compiling from the incoming Ash programming language easier). It is usable, but don't except to create more complex programs easily (not because functions are not implemented yet, but also because the only way of storing stuff is the stack (which is very limiting, even having the DUPlicate instruction)).
 
@@ -43,5 +43,4 @@ It will be possible in the future to :
 * Call external C functions within the bytecode also using cdecl...
 * ... And being able to add some via the ash::VM class
 * Interprete bytecode on the fly
-* Load bytecode from files
 * Reload modified bytecode from a file while the program is running
