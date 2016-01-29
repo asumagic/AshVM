@@ -37,8 +37,7 @@ basetype program[] =
 Note : It is very recommended to compile with -O3, unless debugging, because the compiler optimizations gives a huge performance boost (measured to ~800% on a i5-4670K on the count to 0 program).
 
 It will be possible in the future to :
-* Use, modify and create variables from bytecode, of different types
-* Request, modify and create values from a C++ program via the ash::VM class
+* Request, modify and create variables, handle the stack, debug from a C++ program via the ash::VM class
 * Create functions within the bytecode, and call them using cdecl
 * Call external C functions within the bytecode also using cdecl...
 * ... And being able to add some via the ash::VM class
