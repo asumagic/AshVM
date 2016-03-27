@@ -30,4 +30,4 @@ They give the matching AshASM name, the full name, a short description, a stack 
 | print   | Integer print        | [Debug] Prints an integer popped from the stack.                                | 1              | 0               | Unused         | To print              |
 | create  | Create variable      | Creates a global variable with a hardcoded ID.                                  | 0              | 0               | Variable ID    |                       |
 | store   | Store to variable    | Stores a value popped from the stack to the variable with the matching ID.      | 1              | 0               | Variable ID    | To store              |
-| load    | Load from variable   | Loads a value of the variable with the matching ID and pushes it to the stack.  | 0              | 1               |
+| load    | Load from variable   | Loads a value of the variable with the matching ID and pushes it to the stack.  | 0              | 1               | Variable ID    |                       |
