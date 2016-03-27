@@ -44,10 +44,10 @@ namespace ash
 			flags_total
 		};
 
-		static const char* vmflagsStrings[];
+		static const char* vmflagsStrings[]; // Matching strings for the VM flags
 
-		void setFlag(vmflags flag, bool value = true);
-		bool getFlag(vmflags flag) const
+		void setFlag(vmflags flag, bool value = true); // Sets a VM flag.
+		bool getFlag(vmflags flag) const // Checks if a given flag is enabled.
 		{
 			return static_cast<bool>((flags & (1 << flag)) >> flag);
 		}
@@ -76,25 +76,25 @@ namespace ash
 		}
 
 	private:
-		inline void stackPush(cpuval val);
-		inline cpuval stackPopValue();
-		inline void stackPop();
+		inline void stackPush(cpuval val); // Pushes a value to the stack
+		inline cpuval stackPopValue(); // Pops a value from the stack and returns it
+		inline void stackPop(); // Pops a value from the stack but does not return it
 
 		std::vector<instruction> instructionArray;
 
-		basetype* program;
+		basetype* program; // Pointer to the first byte of the program. An instruction is 32 bits for the opcode + 32 bits for the value. The size is specified by programsize.
 		uint programsize;
 
-		std::unique_ptr<cpuval[]> stack;
-		std::vector<cpuval> variables;
+		std::unique_ptr<cpuval[]> stack; // A stack of a predefined length.
+		std::vector<cpuval> globalVariables; // A vector containing global variables - @todo : drop the vector dependency
 
-		uint pc = 0; // Relies on overflowing. To change?
+		uint pc = 0; // The program counter which points at the currently interpreted instruction in the program.
 		uint stackptr = 1;
 
 		bool hasInitialized = false, isRunning = false;
 
-		uint32_t stackSize = 512;
-		uint32_t flags = 0;
+		uint32_t stackSize = 512; // Specifies the stack size (may be modified before preparing)
+		uint32_t flags = 0; // Stores up to 32 flags (may be modified to 64 in the future); to be used with set/getFlag.
 	};
 }
 

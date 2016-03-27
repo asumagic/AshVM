@@ -44,7 +44,7 @@ namespace ash
 	{
 		instructionArray.resize(programsize);
 		if (getFlag(op_var_prealloc)) // Reserves a hardcoded amount of variables to optimize variable creation
-			variables.reserve(8192);
+			globalVariables.reserve(8192);
 		stack = std::unique_ptr<cpuval[]>(new cpuval[stackSize]);
 
 		if (getFlag(pp_list_vm_instructions))
@@ -233,16 +233,16 @@ namespace ash
 		}
 
 		lLoad: instructionHeader<true>(instr);
-            stackPush(variables[instr->value]);
+            stackPush(globalVariables[instr->value]);
 			instructionNext();
 
 		lStore: instructionHeader<true>(instr);
-            variables[instr->value] = stackPopValue();
+            globalVariables[instr->value] = stackPopValue();
 			instructionNext();
 
 		lCreate: instructionHeader<true>(instr);
-		    if (variables.size() <= instr->value)
-                variables.resize(instr->value + 1);
+		    if (globalVariables.size() <= instr->value)
+                globalVariables.resize(instr->value + 1);
 			instructionNext();
 	}
 }
