@@ -2,7 +2,7 @@
 
 This table groups all available AshVM instructions.
 
-Warning : Some of those are not available yet, including sget, sset, sgetrel, ssetrel, precall, call, ret. They will be available in future commits.
+Warning : Some of those are not available yet, including sget, sset, sgetrel, ssetrel, precall, call, ret. They will be available in future commits. sget, sset, sgetrel, ssetrel are already implemented but not yet pushed.
 
 They give the matching AshASM name, the full name, a short description, a stack prestate and poststate (warning : those does not count possible other modifications on the stack as sget, sset would do), the stack value order (i.e. what the top of the stack and the second value of the stack matches to) and what the value is used for.
 
@@ -33,6 +33,5 @@ They give the matching AshASM name, the full name, a short description, a stack 
 | create  | Create variable            | Creates a global variable with a hardcoded ID.                                  | 0              | 0               | Variable ID    |                       |
 | store   | Store to variable          | Stores a value popped from the stack to the variable with the matching ID.      | 1              | 0               | Variable ID    | To store              |
 | load    | Load from variable         | Loads a value of the variable with the matching ID and pushes it to the stack.  | 0              | 1               | Variable ID    |                       |
-| precall | Prepare a function call    | Prepares the stack for a function call.                                         | See ashdecl.md | See ashdecl.md  |                | See ashdecl.md        |
 | call    | Calls a given function     | Jumps to a hardcoded pc (function begin) and lets the VM handle the call        | See ashdecl.md | See ashdecl.md  | Function PC    | See ashdecl.md        |
 | ret     | Ends a function execution  | Lets the VM go back to the pc next after the function call                      | See ashdecl.md | See ashdecl.md  |                | See ashdecl.md        |
