@@ -7,9 +7,41 @@
 
 using namespace ash;
 
+#include <chrono>
+
+uint32_t programFibonacci[] =
+{
+		push, 50000000, // 285212671
+
+		push, 0,
+		create, 2,
+		store, 2, // first = 0
+
+		push, 1,
+		create, 3,
+		store, 3, // second = 0
+
+		load, 2,
+		load, 3,
+		add, 0, // tmp = first + second
+
+		load, 3,
+		store, 2, // first = second
+
+		store, 3, // second = tmp
+
+		decr, 0, // --n
+		dupo, 0,
+
+		jnz, 7, // jnz 7
+
+		end, 0,
+};
+
+#include <iostream>
 int main(int argc, char* argv[])
 {
-	if (argc <= 1)
+	/*if (argc <= 1)
 	{
 		perror("Usage : AshVM [file] (arguments)");
 		return EXIT_FAILURE;
@@ -17,9 +49,10 @@ int main(int argc, char* argv[])
 
 	programData program = ash::loadProgramFromFile(argv[1]);
 	if (program.program == nullptr)
-		return EXIT_FAILURE;
+		return EXIT_FAILURE;*/
 
-	ash::VM virtualMachine(program.program, program.size);
+	//ash::VM virtualMachine(program.program, program.size);
+	ash::VM virtualMachine(programFibonacci, 17);
 
 	uint32_t errCount = 0;
 
@@ -60,7 +93,7 @@ int main(int argc, char* argv[])
 	virtualMachine.prepare();
 	virtualMachine.run();
 
-	delete[] program.program;
+	//delete[] program.program;
 
     return 0;
 }

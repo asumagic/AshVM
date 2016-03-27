@@ -27,12 +27,6 @@ namespace ash
 		basetype value;
 	};
 
-	template<typename T, size_t size>
-	constexpr size_t getArraySize(T(&)[size])
-	{
-		return size;
-	}
-
 	class VM
 	{
 	public:
@@ -46,6 +40,7 @@ namespace ash
 			pp_dbg_list,
 			dbg_measure_runtime,
 			pp_list_vm_instructions,
+			op_var_prealloc,
 			flags_total
 		};
 
@@ -67,6 +62,19 @@ namespace ash
 		void prepare();
 		void run();
 
+		// Note : instructionNext() is located in vm.cpp as a macro
+		template<bool updateValue, bool increment = true>
+		void instructionHeader(instruction* instr)
+		{
+			if (updateValue)
+				instr->value = instructionArray[pc].value;
+
+			if (increment)
+				instr->opcode = instructionArray[++pc].opcode;
+			else
+				instr->opcode = instructionArray[pc].opcode;
+		}
+
 	private:
 		inline void stackPush(cpuval val);
 		inline cpuval stackPopValue();
@@ -75,13 +83,12 @@ namespace ash
 		std::vector<instruction> instructionArray;
 
 		basetype* program;
-		uint32_t value;
 		uint programsize;
 
 		std::unique_ptr<cpuval[]> stack;
-		std::vector<int32_t> variables;
+		std::vector<cpuval> variables;
 
-		uint pc = static_cast<uint>(-1); // Relies on overflowing. To change?
+		uint pc = 0; // Relies on overflowing. To change?
 		uint stackptr = 1;
 
 		bool hasInitialized = false, isRunning = false;

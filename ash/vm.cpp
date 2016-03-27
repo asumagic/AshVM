@@ -8,6 +8,8 @@
 #include <chrono>
 #endif
 
+#define instructionNext() goto *labels[instr->opcode];
+
 namespace ash
 {
 	VM::VM() {}
@@ -23,7 +25,9 @@ namespace ash
 		"pp_noprint",
 		"pp_dbg_list",
 		"dbg_measure_runtime",
-		"pp_list_vm_instructions"
+		"pp_list_vm_instructions",
+		"op_var_prealloc",
+		"op_jit"
 	};
 
 	void VM::setFlag(vmflags flag, bool value)
@@ -40,6 +44,8 @@ namespace ash
 	void VM::prepare()
 	{
 		instructionArray.resize(programsize);
+		if (getFlag(op_var_prealloc)) // Reserves a hardcoded amount of variables to optimize variable creation
+			variables.reserve(8192);
 		stack = std::unique_ptr<cpuval[]>(new cpuval[stackSize]);
 
 		if (getFlag(pp_list_vm_instructions))
@@ -68,14 +74,10 @@ namespace ash
 	inline void VM::stackPush(cpuval val)
 	{
 		stack[++stackptr] = val;
-		if (stackptr == stackSize)
-			puts("Stack overflow!");
 	}
 
 	inline cpuval VM::stackPopValue()
 	{
-		if (stackptr == 0)
-			puts("Stack underflow!");
 		return stack[stackptr--];
 	}
 
@@ -86,15 +88,15 @@ namespace ash
 
 	void VM::run()
 	{
-		void* labels[OPTOTAL] = { &&lNull, &&lEnd, &&lPush, &&lPop, &&lAdd, &&lIncr, &&lSub, &&lDecr, &&lMul, &&lJmp, &&lJz, &&lJnz, &&lJlz, &&lJhz, &&lRjmp, &&lPrint, &&lDup, &&lDupO, &&lStore, &&lLoad, &&lCreate };
+		void* labels[OPTOTAL + 1] = { &&lNull, &&lEnd, &&lPush, &&lPop, &&lAdd, &&lIncr, &&lSub, &&lDecr, &&lMul, &&lJmp, &&lJz, &&lJnz, &&lJlz, &&lJhz, &&lRjmp, &&lPrint, &&lDup, &&lDupO, &&lStore, &&lLoad, &&lCreate };
 
-		const bool noPrint = getFlag(pp_noprint);
-		const bool measureTime = getFlag(dbg_measure_runtime);
-		const bool printInstructions = getFlag(pp_dbg_list);
+		const bool noPrint = getFlag(pp_noprint),
+				   measureTime = getFlag(dbg_measure_runtime),
+				   printInstructions = getFlag(pp_dbg_list);
 
 #ifdef ALLOW_TIME_MEASURE // TODO : Find a more elegant way so we don't add overhead when not using -dbg_measure_runtime
 		using namespace std::chrono;
-		auto measureStart = high_resolution_clock::now();
+		auto measureStart = system_clock::now();
 #else
 		if (measureTime)
 		{
@@ -117,137 +119,131 @@ namespace ash
 
 		isRunning = true;
 
-		lBack:
-			pc++;
-		lBackNoIncrement:
-			const instruction& instr = instructionArray[pc];
-			value = instr.value;
-
-			goto *labels[instr.opcode];
+		instruction* instr = new instruction;
+		instr->opcode = instructionArray[0].opcode;
+		instructionNext();
 
 		lNull:
 		{
+			instructionHeader<false>(instr);
 			puts("Null instruction encountered.");
-			goto lBack;
+			instructionNext();
 		}
 
 		lEnd:
 #ifdef ALLOW_TIME_MEASURE
+            delete instr;
 			if (measureTime)
 			{
-				auto timeElapsed = duration<float, std::milli>(high_resolution_clock::now() - measureStart);
+				auto timeElapsed = duration<float, std::milli>(system_clock::now() - measureStart);
 				printf("Time elapsed : %fms\n", timeElapsed.count());
 			}
 #endif
 			return;
 
-		lPush:
-			stackPush(value);
-			goto lBack;
+		lPush: instructionHeader<true>(instr);
+			stackPush(instr->value);
+			instructionNext();
 
-		lPop:
+		lPop: instructionHeader<false>(instr);
 			stackPop();
-			goto lBack;
+			instructionNext();
 
-		lAdd:
+		lAdd: instructionHeader<false>(instr);
 			stackPush(stackPopValue() + stackPopValue());
-			goto lBack;
+			instructionNext();
 
-		lIncr:
+		lIncr: instructionHeader<false>(instr);
 			++stack[stackptr];
-			goto lBack;
+			instructionNext();
 
-		lSub:
-		{
+		lSub: {	instructionHeader<false>(instr);
 			cpuval b = stackPopValue();
 			stackPush(stackPopValue() - b);
-			goto lBack;
+			instructionNext();
 		}
 
-		lDecr:
+		lDecr: instructionHeader<false>(instr);
 			--stack[stackptr];
-			goto lBack;
+			instructionNext();
 
-		lMul:
+		lMul: instructionHeader<false>(instr);
 			stackPush(stackPopValue() * stackPopValue());
-			goto lBack;
+			instructionNext();
 
-		lJmp:
-			pc = value;
-			goto lBackNoIncrement;
+		lJmp: instructionHeader<true>(instr);
+			pc = instr->value;
+			instructionHeader<false, false>(instr); // Update the pc
+			instructionNext();
 
-		lJz:
+		lJz: instructionHeader<true>(instr);
 			if (stackPopValue() == 0)
 			{
-				pc = value;
-				goto lBackNoIncrement;
+				pc = instr->value;
+				instructionHeader<false, false>(instr);
 			}
-			goto lBack;
+			instructionNext();
 
-		lJnz:
+		lJnz: instructionHeader<true>(instr);
 			if (stackPopValue() != 0)
 			{
-				pc = value;
-				goto lBackNoIncrement;
+				pc = instr->value;
+				instructionHeader<false, false>(instr);
 			}
-			goto lBack;
+			instructionNext();
 
-		lJlz:
+		lJlz: instructionHeader<true>(instr);
 		    if (stackPopValue() < 0)
 			{
-				pc = value;
-				goto lBackNoIncrement;
+				pc = instr->value;
+				instructionHeader<false, false>(instr);
 			}
-		    goto lBack;
+			instructionNext();
 
-		lJhz:
+		lJhz: instructionHeader<true>(instr);
             if (stackPopValue() < 0)
 			{
-				pc = value;
-				goto lBackNoIncrement;
+				pc = instr->value;
+				instructionHeader<false, false>(instr);
 			}
-		    goto lBack;
+			instructionNext();
 
-		lRjmp:
-			pc += value;
-			goto lBack;
+		lRjmp: instructionHeader<true>(instr);
+			pc += instr->value;
+			instructionHeader<false, false>(instr);
+			instructionNext();
 
-		lPrint:
+		lPrint: instructionHeader<false>(instr);
 			printf("%d\n", stackPopValue());
-			goto lBack;
+			instructionNext();
 
-		lDup:
-		{
+		lDup: { instructionHeader<true>(instr);
 			const cpuval toRepeat = stack[stackptr];
-			const uint target = stackptr + value;
+			const uint target = stackptr + instr->value;
 			while (stackptr < target)
 			{
 				stack[++stackptr] = toRepeat;
 			}
-			goto lBack;
+			instructionNext();
 		}
 
-		lDupO:
-		{
+		lDupO: { instructionHeader<false>(instr);
 			const cpuval val = stack[stackptr];
 			stack[++stackptr] = val;
-			goto lBack;
+			instructionNext();
 		}
 
-		lLoad:
-		    if (instr.value != 0)
-                stackPush(variables[instr.value]);
+		lLoad: instructionHeader<true>(instr);
+            stackPush(variables[instr->value]);
+			instructionNext();
 
-            stackPush(stackPopValue());
-		    goto lBack;
+		lStore: instructionHeader<true>(instr);
+            variables[instr->value] = stackPopValue();
+			instructionNext();
 
-		lStore:
-            variables[instr.value] = stackPopValue();
-		    goto lBack;
-
-		lCreate:
-		    if (variables.size() <= instr.value)
-                variables.resize(instr.value + 1);
-            goto lBack;
+		lCreate: instructionHeader<true>(instr);
+		    if (variables.size() <= instr->value)
+                variables.resize(instr->value + 1);
+			instructionNext();
 	}
 }
