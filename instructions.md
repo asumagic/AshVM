@@ -1,6 +1,7 @@
 AshVM instruction list
 
 | AshASM | Full name | Description | Stack prestate | Stack poststate |
+|---     |---        |---          |---             |---              |
 | null   | Null      | Shouldn't be used - Prints a debugging message | 0 | 0 |
 
     VM functionalities
