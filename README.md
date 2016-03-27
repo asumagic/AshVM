@@ -1,16 +1,18 @@
 # AshVM
-AshVM is a simple to use and portable 32-bit Virtual Machine written in C++ that interpretes Ash bytecode.
-It will be able to load bytecode directly from files (and a simple ashasm parser will come after then).
+AshVM is a simple to use, fast and portable 32-bit Virtual Machine written in C++ that interpretes Ash bytecode.
+It is abled to load bytecode from files (note that this feature is disabled for now).
 
 It requires a C++11 compiler. Because of the label reference based interpretation (for a noticeable speed gain, around 50%, compared to the first version), it may only run on g++ (x86, ARM, PPC should work, but according to the gcc webpage, AVR wouldn't), LLVM clang++ and possibly icc.
 
-clang++ seems to optimize the VM slightly better than g++ (on a i5-4670K, measured to 5~10% on the countdown program)
+It is now built and tested with gcc6 which provides better optimization than clang for now.
 
-When no time measuring is specified compile-time (see [ALLOW_TIME_MEASURE](https://github.com/AsuMagic/AshVM/blob/master/vm.cpp#L3)), the only dependencies are stdint, memory (for C++11 smart pointers) and vector (these probably will be dropped soon); Else chrono also is required.
+When no time measuring is specified compile-time (see [ALLOW_TIME_MEASURE](https://github.com/AsuMagic/AshVM/blob/master/vm.cpp#L3)), the only dependencies are stdint, memory (for C++11 smart pointers, and that's likely not going to change) and vector (this probably will be dropped soon); Else chrono also is required.
 
-As for now, bytecode function calls are not implemented and external C calls aren't either, but it is a priority currently. The fibonacci program (which isn't optimized at all) runs fine.
+As for now, bytecode function calls are not implemented and external C calls aren't either, but it is the highest priority right now. Local variables will be implemented at the same time.
 
-Using the Virtual Machine :
+The fibonacci program runs around 3 times faster than a good Lua implementation (without functions) for the same input. In-depth benchmarks will be done with other bytecode virtual machines (angelscript, lua, squirrel?) when AshVM will be in a stable state.
+
+Loading a program with the VM is easy and quick :
 ```c++
 int main()
 {
@@ -22,12 +24,12 @@ int main()
 }
 ```
 
-Simple program counting from -10'000'000 to 0 (decrementing from 10'000'000 to 0 probably would be possible as well) :
+Simple program counting from 10'000'000 to 0 (decrementing from 10'000'000 to 0 probably would be possible as well) :
 ```c++
 basetype program[] =
 {
-	push, static_cast<basetype>(-10000000), // Push -10000000 on the stack
-	incr, 0, // Increment the value on the stack
+	push, 10000000, // Push 10000000 on the stack
+	decr, 0, // Increment the value on the stack
 	dupo, 0, // Duplicates the value on the stack once (because jnz is going to destroy one)
 	jnz, 1, // Jump to incr (2nd instruction) only when the value taken ontop of the stack is NOT zero
 	end, 0, // Ends the program execution (The VM will crash else).
@@ -36,10 +38,12 @@ basetype program[] =
 
 Note : It is very recommended to compile with -O3, unless debugging, because the compiler optimizations gives a huge performance boost (measured to ~800% on a i5-4670K on the count to 0 program).
 
+`-march=native -mtune=native` possibly gives good performance enhancement on runtime and on preparation.
+
 It will be possible in the future to :
 * Request, modify and create variables, handle the stack, debug from a C++ program via the ash::VM class
 * Create functions within the bytecode, and call them using cdecl
 * Call external C functions within the bytecode also using cdecl...
-* ... And being able to add some via the ash::VM class
+* ... And being able to bind them via the ash::VM class
 * Interprete bytecode on the fly
 * Reload modified bytecode from a file while the program is running
