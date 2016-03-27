@@ -26,8 +26,7 @@ namespace ash
 		"pp_dbg_list",
 		"dbg_measure_runtime",
 		"pp_list_vm_instructions",
-		"op_var_prealloc",
-		"op_jit"
+		"op_var_prealloc"
 	};
 
 	void VM::setFlag(vmflags flag, bool value)
