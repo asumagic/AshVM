@@ -26,7 +26,7 @@ AshVM instruction list
 - rjmp : Jumps a given amount of instructions.
 
     Debugging (do not rely on those, they are very subject to change / to be deprecated)
-- print : Prints an integer
+- print : Prints an integer popped from the stack (1=>0)
 
     Variables
 - create : Creates a global variable with a given ID
