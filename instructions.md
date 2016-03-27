@@ -1,4 +1,5 @@
 AshVM instruction list
+
     VM functionalities
 - null : Should not be used - Prints a debugging message (opcode is 0x0000)
 - end : Ends the program execution (can print the execution time with -dbg_measure_runtime
