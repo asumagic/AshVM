@@ -35,6 +35,6 @@ They give the matching AshASM name, the full name, a short description, a stack 
 | load    | Load from variable         | Loads a value of the variable with the matching ID and pushes it to the stack.       | 0              | 1               | Variable ID    |                       |
 | lcreate | Create local variable      | Creates a function-local variable with a hardcoded ID.                               | 0              | 0               | Variable ID    |                       |
 | lstore  | Store local variable       | Stores a value popped from the stack to the local variable with the matching ID.     | 1              | 0               | Variable ID    | To store              |
-| lload    | Load from local variable   | Loads a value of the local variable with the matching ID and pushes it to the stack. | 0              | 1               | Variable ID    |                       |
+| lload   | Load from local variable   | Loads a value of the local variable with the matching ID and pushes it to the stack. | 0              | 1               | Variable ID    |                       |
 | call    | Calls a given function     | Jumps to a hardcoded pc (function begin) and lets the VM handle the call             | See ashdecl.md | See ashdecl.md  | Function PC    | See ashdecl.md        |
 | ret     | Ends a function execution  | Lets the VM go back to the pc next after the function call                           | See ashdecl.md | See ashdecl.md  |                | See ashdecl.md        |
