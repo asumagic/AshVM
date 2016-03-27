@@ -28,7 +28,7 @@ Simple program counting from 10'000'000 to 0 (decrementing from 10'000'000 to 0 
 ```c++
 basetype program[] =
 {
-	push, 10000000, // Push -10000000 on the stack
+	push, 10000000, // Push 10000000 on the stack
 	decr, 0, // Increment the value on the stack
 	dupo, 0, // Duplicates the value on the stack once (because jnz is going to destroy one)
 	jnz, 1, // Jump to incr (2nd instruction) only when the value taken ontop of the stack is NOT zero
