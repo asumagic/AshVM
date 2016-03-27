@@ -1,12 +1,19 @@
 AshVM instruction list
 
+| AshASM | Full name | Description | Stack prestate | Stack poststate |
+| null   | Null      | Shouldn't be used - Prints a debugging message | 0 | 0 |
+
     VM functionalities
-- null : Should not be used - Prints a debugging message (opcode is 0x0000)
-- end : Ends the program execution (can print the execution time with -dbg_measure_runtime
+- null / Null : Should not be used - Prints a debugging message (opcode is 0x0000)
+- end / Program end : Ends the program execution (can print the execution time with -dbg_measure_runtime
 
     Stack handling
-- push : Pushes a hardcoded value to the stack
-- pop : Pops the top of the stack and ignores it (1=>0)
+- push / Stack push : Pushes a hardcoded value to the stack
+- pop / Stack pop : Pops the top of the stack and ignores it (1=>0)
+- sget / Stack get from static position : Gets a value from the stack at a specific position (0=>1)
+- sset / Stack set on static position : Sets a value popped from the top of the stack at a specific position (1=>0)
+- sgetrel / Stack get from dynamic position : Gets a value from the stack at a position popped from the top of the stack (1=>1)
+- ssetrel : Sets a value popped from the 2nd position in the stack at a position popped from the top of the stack (2=>0)
 - dup : Duplicates the top value from the stack a given amount of times. (1=>x)
 - dupo : Duplicates the top value from the stack once. (1=>2)
 
@@ -25,7 +32,7 @@ AshVM instruction list
 - jhz : Pops a value from the stack and if it is STRICTLY HIGHER than zero, jumps to the given pc. (1=>0)
 - rjmp : Jumps a given amount of instructions.
 
-    Debugging (do not rely on those, they are very subject to change / to be deprecated)
+    Debugging (do not rely on those, they are very subject to change / to be deprecated and may have poor performance)
 - print : Prints an integer popped from the stack (1=>0)
 
     Variables
