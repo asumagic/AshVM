@@ -53,10 +53,7 @@ namespace ash
 		static const char* vmflagsStrings[]; // Matching strings for the VM flags
 
 		void setFlag(vmflags flag, bool value = true); // Sets a VM flag.
-		bool getFlag(vmflags flag) const // Checks if a given flag is enabled.
-		{
-			return static_cast<bool>((flags & (1 << flag)) >> flag);
-		}
+		bool getFlag(vmflags flag) const; // Checks if a given flag is enabled.
 
 		void bindProgram(basetype* program, uint _programsize);
 

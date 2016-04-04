@@ -35,6 +35,11 @@ namespace ash
 		flags |= value << flag;
 	}
 
+	bool VM::getFlag(vmflags flag) const // Checks if a given flag is enabled.
+	{
+		return static_cast<bool>((flags & (1 << flag)) >> flag);
+	}
+
 	void VM::bindProgram(basetype* _program, uint _programsize)
 	{
 		program = _program;
