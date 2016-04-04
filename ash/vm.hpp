@@ -73,9 +73,9 @@ namespace ash
 				instr->value = instructionArray[pc].value;
 
 			if (increment)
-				instr->opcode = instructionArray[++pc].opcode;
-			else
-				instr->opcode = instructionArray[pc].opcode;
+				++pc;
+
+			instr->opcode = instructionArray[pc].opcode;
 		}
 
 	private:
