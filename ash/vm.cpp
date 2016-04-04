@@ -1,6 +1,7 @@
 #include "vm.hpp"
 
 #define ALLOW_TIME_MEASURE
+#define RESERVED_VARIABLESPACE 8192
 
 #include <cstdio>
 
@@ -44,8 +45,13 @@ namespace ash
 	{
 		instructionArray.resize(programsize);
 		if (getFlag(op_var_prealloc)) // Reserves a hardcoded amount of variables to optimize variable creation
-			globalVariables.reserve(8192);
+		{
+			globalVariables.reserve(RESERVED_VARIABLESPACE);
+			localVariables.reserve(RESERVED_VARIABLESPACE);
+		}
+
 		stack = std::unique_ptr<cpuval[]>(new cpuval[stackSize]);
+		callstack = std::unique_ptr<funcdata[]>(new funcdata[recursivityDepth]);
 
 		if (getFlag(pp_list_vm_instructions))
         {
@@ -87,7 +93,7 @@ namespace ash
 
 	void VM::run()
 	{
-		void* labels[OPTOTAL + 1] = { &&lNull, &&lEnd, &&lPush, &&lPop, &&lAdd, &&lIncr, &&lSub, &&lDecr, &&lMul, &&lJmp, &&lJz, &&lJnz, &&lJlz, &&lJhz, &&lRjmp, &&lPrint, &&lDup, &&lDupO, &&lStore, &&lLoad, &&lCreate };
+		void* labels[OPTOTAL + 1] = { &&lNull, &&lEnd, &&lPush, &&lPop, &&lSGet, &&lSSet, &&lSGetRel, &&lSSetRel, &&lAdd, &&lIncr, &&lSub, &&lDecr, &&lMul, &&lJmp, &&lJz, &&lJnz, &&lJlz, &&lJhz, &&lRjmp, &&lPrint, &&lDup, &&lDupO, &&lStore, &&lLoad, &&lCreate, &&lCall, &&lRet, &&lLStore, &&lLLoad, &&lLCreate };
 
 		const bool noPrint = getFlag(pp_noprint),
 				   measureTime = getFlag(dbg_measure_runtime),
@@ -148,6 +154,24 @@ namespace ash
 			stackPop();
 			instructionNext();
 
+		lSGet: instructionHeader<true>(instr);
+			stackPush(stack[instr->value]);
+			instructionNext();
+
+		lSSet: instructionHeader<true>(instr);
+			stack[instr->value] = stackPopValue();
+			instructionNext();
+
+		lSGetRel: instructionHeader<false>(instr);
+			stackPush(stack[stackPopValue()]);
+			instructionNext();
+
+		lSSetRel: { instructionHeader<false>(instr);
+			const cpuval loc = stackPopValue();
+			stack[loc] = stackPopValue(); // @todo : Make sure we can't pull stackPopValue directly instead of loc
+			instructionNext();
+		}
+
 		lAdd: instructionHeader<false>(instr);
 			stackPush(stackPopValue() + stackPopValue());
 			instructionNext();
@@ -200,7 +224,7 @@ namespace ash
 			instructionNext();
 
 		lJhz: instructionHeader<true>(instr);
-            if (stackPopValue() < 0)
+            if (stackPopValue() > 0)
 			{
 				pc = instr->value;
 				instructionHeader<false, false>(instr);
@@ -243,6 +267,38 @@ namespace ash
 		lCreate: instructionHeader<true>(instr);
 		    if (globalVariables.size() <= instr->value)
                 globalVariables.resize(instr->value + 1);
+			instructionNext();
+
+		lCall: instructionHeader<true>(instr);
+			if (callptr > 500) { printf("Depth overflow"); return; }
+			callstack[++callptr] = funcdata{ pc, localtop + 1 };
+			pc = instr->value;
+		instructionHeader<false, false>(instr); // Opcode update
+		instructionNext();
+
+		lRet: instructionHeader<true>(instr);
+			localtop = callstack[callptr].localptr - 1; // Restore back to the last previous local variable frame
+			pc = callstack[callptr].postcallpc;
+			--callptr;
+			instructionHeader<false, false>(instr); // Opcode update
+			instructionNext();
+
+		lLStore: instructionHeader<true>(instr);
+			const int stackval = stackPopValue();
+			localVariables[callstack[callptr].localptr + instr->value] = stackval;
+			instructionNext();
+
+		lLLoad: instructionHeader<true>(instr);
+			stackPush(localVariables[callstack[callptr].localptr + instr->value]);
+			instructionNext();
+
+		lLCreate: instructionHeader<true>(instr);
+			basetype loc = callstack[callptr].localptr + instr->value;
+			if (loc > localtop)
+				localtop = loc;
+
+			if (localVariables.size() <= loc)
+				localVariables.resize(loc + 1);
 			instructionNext();
 	}
 }

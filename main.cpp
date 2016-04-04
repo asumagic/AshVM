@@ -9,34 +9,19 @@ using namespace ash;
 
 #include <chrono>
 
-uint32_t programFibonacci[] =
+uint32_t funcTest[]
 {
-		push, 50000000, // 285212671
+	push, 10,
+	call, 4,
+	print, 0,
+	end, 0,
 
-		push, 0,
-		create, 2,
-		store, 2, // first = 0
-
-		push, 1,
-		create, 3,
-		store, 3, // second = 0
-
-		load, 2,
-		load, 3,
-		add, 0, // tmp = first + second
-
-		load, 3,
-		store, 2, // first = second
-
-		store, 3, // second = tmp
-
-		decr, 0, // --n
-		dupo, 0,
-
-		jnz, 7, // jnz 7
-
-		end, 0,
+	// f(x) = 3 * x
+	push, 3,
+	mul, 0,
+	ret, 0,
 };
+
 
 #include <iostream>
 int main(int argc, char* argv[])
@@ -52,7 +37,7 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;*/
 
 	//ash::VM virtualMachine(program.program, program.size);
-	ash::VM virtualMachine(programFibonacci, 17);
+	ash::VM virtualMachine(funcTest, 7);
 
 	uint32_t errCount = 0;
 

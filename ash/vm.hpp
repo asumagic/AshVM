@@ -13,18 +13,24 @@ namespace ash
 
 	enum instructions
 	{
-		null = 0, end, push, pop, add, incr, sub, decr, mul, jmp, jz, jnz, jlz, jhz, rjmp, print, dup, dupo, store, load, create, OPTOTAL
+		null = 0, end, push, pop, sget, sset, sgetrel, ssetrel, add, incr, sub, decr, mul, jmp, jz, jnz, jlz, jhz, rjmp, print, dup, dupo, store, load, create, call, ret, lstore, lload, lcreate, OPTOTAL
 	};
 
 	static const char* instructionStrings[] =
 	{
-		"null", "end", "push", "pop", "add", "incr", "sub", "decr", "mul", "jmp", "jz", "jnz", "jlz", "jhz", "rjmp", "print", "dup", "dupo", "store", "load", "create",
+		"null", "end", "push", "pop", "sget", "sset", "sgetrel", "ssetrel", "add", "incr", "sub", "decr", "mul", "jmp", "jz", "jnz", "jlz", "jhz", "rjmp", "print", "dup", "dupo", "store", "load", "create", "call", "ret", "lstore", "lload", "lcreate"
 	};
 
 	struct instruction
 	{
 		uint32_t opcode;
 		basetype value;
+	};
+
+	struct funcdata
+	{
+		uint32_t postcallpc; // pc of the instruction after the matching function call
+		uint32_t localptr;  // local variable table location
 	};
 
 	class VM
@@ -86,15 +92,19 @@ namespace ash
 		uint programsize;
 
 		std::unique_ptr<cpuval[]> stack; // A stack of a predefined length.
-		std::vector<cpuval> globalVariables; // A vector containing global variables - @todo : drop the vector dependency
+		std::unique_ptr<funcdata[]> callstack; // A list of post function call PCs. Its size define the maximal theorical recursivity depth.
+		std::vector<cpuval> globalVariables, localVariables; // Global and local variable vectors
 
-		uint pc = 0; // The program counter which points at the currently interpreted instruction in the program.
-		uint stackptr = 1;
+		uint pc = 0, // The program counter which points at the currently interpreted instruction in the program.
+		     stackptr = 0,
+		     callptr = 0, // Call pointer, the current call depth
+		     localtop = 0; // Refers to the top value of the local variable stack
 
 		bool hasInitialized = false, isRunning = false;
 
-		uint32_t stackSize = 512; // Specifies the stack size (may be modified before preparing)
-		uint32_t flags = 0; // Stores up to 32 flags (may be modified to 64 in the future); to be used with set/getFlag.
+		uint32_t stackSize = 8192, // Specifies the stack size (may be modified before preparing)
+		         recursivityDepth = 4096, // Maximal recursivity depth
+		         flags = 0; // Stores up to 32 flags (may be modified to 64 in the future); to be used with set/getFlag.
 	};
 }
 
