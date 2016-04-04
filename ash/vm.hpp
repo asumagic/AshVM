@@ -29,7 +29,7 @@ namespace ash
 
 	struct funcdata
 	{
-		uint32_t postcallpc; // pc of the instruction after the matching function call
+		uint32_t postcallpc; // pc of the instruction located after the matching function call
 		uint32_t localptr;  // local variable table location
 	};
 
