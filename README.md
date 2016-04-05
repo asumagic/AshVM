@@ -53,7 +53,8 @@ sudo apt-get install build-essentials cmake
 
 Download the project as a .zip from github or fetch directly the files from git.
 
-```cd /path/to/the/root/
+```
+cd /path/to/the/root/
 mkdir build
 cd build
 cmake ..
