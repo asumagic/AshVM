@@ -1,6 +1,6 @@
 #License
 
-This software is distributed under the zlib/libpng license, which can be found below or [here](https://opensource.org/licenses/Zlib).
+This software is distributed under the zlib/libpng license, which can be found below or [here](https://opensource.org/licenses/Zlib). AshVM is entirely Free and OpenSource Software.
 
 **Copyright (c) 2016 AsuMagic**
 
