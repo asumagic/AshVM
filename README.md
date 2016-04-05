@@ -47,7 +47,9 @@ Note : It is very recommended to compile with -O3, unless debugging, because the
 
 Install the minimal requirements to build a C++ program plus cmake and GNU make, which can be done so using Debian/Ubuntu/Mint :
 
-```sudo apt-get install build-essentials cmake```
+```
+sudo apt-get install build-essentials cmake
+```
 
 Download the project as a .zip from github or fetch directly the files from git.
 
